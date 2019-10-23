@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+    <style>
+      canvas {
+        /* border: 1px solid #000; */
+        position: absolute;
+        top: 28px;
+        left: 28px;
+        margin-right: 50px;
+      }
+      button {
+        position: absolute;
+        left: 600px;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas width="400" height="900" id="test">
+      你的浏览器不支持canvas,请升级你的浏览器
+    </canvas>
+    <canvas width="400" height="900" id="mouse">
+      你的浏览器不支持canvas,请升级你的浏览器
+    </canvas>
+    <button id="button">获取坐标</button>
+    <script src="./jquery.js"></script>
+    <script src="./lodash.js"></script>
+    <script>
+      const canvas = document.getElementById('test')
+      const mouseCanvas = document.getElementById('mouse')
+      const draw = () => {
+        if (!canvas.getContext) return
+        const ctx = canvas.getContext('2d')
+        const mouseCtx = mouseCanvas.getContext('2d')
+        // 背景
+        const img = new Image()
+        img.src = './road.jpg'
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0, 400, 900)
+
+          // 图片画完画别的
+          // ----------------------变量-------------------------
+          // 是否按住左键
+          let pressing = false
+
+          // 按住左键划线时候,线的头尾坐标
+          let lineTwoEnds = {
+            mouseX0: null,
+            mouseY0: null,
+            mouseX1: null,
+            mouseY1: null,
+          }
+
+          // 画完一条线后, 两端的坐标数组
+          let histCoordinates = []
+
+          // ----------------------方法-------------------------
+          const drawLine = (ctx, mouseX0, mouseY0, mouseX1, mouseY1) => {
+            ctx.beginPath()
+            ctx.moveTo(mouseX0, mouseY0)
+            ctx.lineTo(mouseX1, mouseY1)
+            ctx.strokeStyle = '#f00'
+            ctx.lineWidth = 2
+            ctx.stroke()
+          }
+
+          // 鼠标点下去时候,线两端的圆圈
+          const drawCircle = (ctx, x, y) => {
+            ctx.beginPath()
+            ctx.arc(x, y, 5, 0, Math.PI * 2)
+            ctx.strokeStyle = 'blue'
+            ctx.stroke()
+            ctx.fillStyle = 'blue'
+            ctx.fill()
+
+            // // 演示用
+            // ctx.beginPath()
+            // ctx.arc(x, y, 30, 0, Math.PI * 2)
+            // ctx.strokeStyle = 'blue'
+            // ctx.stroke()
+          }
+
+          const connectDot = (dotX, dotY, nameX, nameY) => {
+            if (histCoordinates.length) {
+              let radiusFromHists = histCoordinates.map(v =>
+                Math.sqrt(Math.pow(v.x - dotX, 2) + Math.pow(v.y - dotY, 2)),
+              )
+              radiusFromHists.map((v2, v2Index) => {
+                if (v2 < 30) {
+                  lineTwoEnds[nameX] = histCoordinates[v2Index].x
+                  lineTwoEnds[nameY] = histCoordinates[v2Index].y
+                }
+              })
+            }
+          }
+
+          const up = () => {
+            if (pressing) {
+              mouseCtx.clearRect(0, 0, 400, 900)
+              let { mouseX1: mouseX1orig, mouseY1: mouseY1orig } = lineTwoEnds
+              if (!_.isNil(mouseX1orig)) {
+                connectDot(mouseX1orig, mouseY1orig, 'mouseX1', 'mouseY1')
+                let { mouseX0, mouseY0, mouseX1, mouseY1 } = lineTwoEnds
+                drawLine(ctx, mouseX0, mouseY0, mouseX1, mouseY1)
+                drawCircle(ctx, mouseX0, mouseY0)
+                drawCircle(ctx, mouseX1, mouseY1)
+
+              }
+              let { mouseX0, mouseY0, mouseX1, mouseY1 } = lineTwoEnds
+              if (!_.isNil(mouseX0) && !_.isNil(mouseX1)) {
+                // push到历史坐标
+                histCoordinates.push({ x: mouseX0, y: mouseY0 })
+                histCoordinates.push({ x: mouseX1, y: mouseY1 })
+              }
+            }
+            pressing = false
+            lineTwoEnds = {
+              mouseX0: null,
+              mouseY0: null,
+              mouseX1: null,
+              mouseY1: null,
+            }
+          }
+
+          $('#mouse').mousedown(function(e) {
+            lineTwoEnds.mouseX0 = e.pageX - this.offsetLeft
+            lineTwoEnds.mouseY0 = e.pageY - this.offsetTop
+            let { mouseX0, mouseY0 } = lineTwoEnds
+            connectDot(mouseX0, mouseY0, 'mouseX0', 'mouseY0')
+            drawCircle(mouseCtx, mouseX0, mouseY0)
+            pressing = true
+          })
+
+          $('#mouse').mousemove(function(e) {
+            if (pressing) {
+              mouseCtx.clearRect(0, 0, 400, 900)
+              mouseCtx.beginPath()
+              lineTwoEnds.mouseX1 = e.pageX - this.offsetLeft
+              lineTwoEnds.mouseY1 = e.pageY - this.offsetTop
+              console.log('lineTwoEnds:', lineTwoEnds)
+              const { mouseX0, mouseY0, mouseX1, mouseY1 } = lineTwoEnds
+              drawLine(mouseCtx, mouseX0, mouseY0, mouseX1, mouseY1)
+              drawCircle(mouseCtx, mouseX0, mouseY0)
+            }
+          })
+
+          $('#mouse').mouseup(function(e) {
+            up()
+          })
+
+          $('#mouse').mouseleave(e => {
+            up()
+          })
+
+          $('#button').click(e => {
+            const result = _
+              .chain(histCoordinates)
+              .uniqWith(_.isEqual)
+              .value()
+              console.log('result:', result)
+          })
+        }
+      }
+      draw()
+    </script>
+  </body>
+</html>

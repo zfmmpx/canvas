@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+    <style>
+      canvas {
+        border: 1px solid #000;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas width="400" height="900" id="test">
+      你的浏览器不支持canvas,请升级你的浏览器
+    </canvas>
+    <script>
+      const canvas = document.getElementById('test')
+      const draw = () => {
+        if (!canvas.getContext) return
+        const ctx = canvas.getContext('2d')
+        // 背景
+        const img = new Image()
+        img.src = './road.jpg'
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0, 400, 900)
+
+          // 图片画完画别的
+          ctx.beginPath()
+          ctx.moveTo(50, 20)
+          ctx.lineTo(200, 20)
+          ctx.save()
+          ctx.strokeStyle = '#f00'
+          ctx.lineTo(200, 40)
+          ctx.stroke()
+
+          ctx.beginPath()
+          ctx.moveTo(200, 40)
+          ctx.lineTo(50, 20)
+          ctx.closePath()
+          ctx.restore()
+          ctx.stroke()
+
+          ctx.beginPath()
+          ctx.moveTo(50, 50)
+          ctx.lineTo(200, 50)
+          ctx.lineTo(200, 140)
+          ctx.closePath()
+          ctx.fillStyle = '#f00'
+          ctx.stroke()
+          ctx.fill()
+
+          ctx.beginPath()
+          ctx.arc(50, 140, 40, 0, Math.PI, false)
+          ctx.fill()
+
+          ctx.beginPath()
+          ctx.moveTo(0, 6)
+          ctx.lineTo(100, 6)
+          ctx.lineWidth = 10
+          ctx.stroke()
+
+          ctx.beginPath()
+          ctx.moveTo(110, 10)
+          ctx.lineTo(160, 10)
+          ctx.lineWidth = 20
+          ctx.stroke()
+        }
+      }
+      draw()
+    </script>
+  </body>
+</html>
