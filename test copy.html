@@ -103,7 +103,6 @@
               mouseCtx.clearRect(0, 0, 400, 900)
               let { mouseX1: mouseX1orig, mouseY1: mouseY1orig } = lineTwoEnds
               if (!_.isNil(mouseX1orig)) {
-                connectDot(mouseX1orig, mouseY1orig, 'mouseX1', 'mouseY1')
                 let { mouseX0, mouseY0, mouseX1, mouseY1 } = lineTwoEnds
                 drawLine(ctx, mouseX0, mouseY0, mouseX1, mouseY1)
                 drawCircle(ctx, mouseX0, mouseY0)
@@ -141,8 +140,9 @@
               mouseCtx.beginPath()
               lineTwoEnds.mouseX1 = e.pageX - this.offsetLeft
               lineTwoEnds.mouseY1 = e.pageY - this.offsetTop
-              console.log('lineTwoEnds:', lineTwoEnds)
+              
               const { mouseX0, mouseY0, mouseX1, mouseY1 } = lineTwoEnds
+              connectDot(mouseX1, mouseY1, 'mouseX1', 'mouseY1')
               drawLine(mouseCtx, mouseX0, mouseY0, mouseX1, mouseY1)
               drawCircle(mouseCtx, mouseX0, mouseY0)
             }
