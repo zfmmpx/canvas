@@ -1,0 +1,119 @@
+<style>
+	* {
+		margin: 0;
+		padding: 0;
+	}
+</style>
+
+<canvas id="canvas" width="400" height="400"></canvas>
+
+
+<script>
+	var canvas = document.getElementById('canvas');
+	var ctx = canvas.getContext('2d');
+
+	// 矩形背景
+	ctx.fillStyle = 'gray';
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+	// ========[ 测试一 ]========= //
+
+	// 绘制圆
+	ctx.beginPath();
+	ctx.arc(100, 100, 50, 0, 2 * Math.PI);
+	ctx.fillStyle = 'red';
+	ctx.fill();
+	ctx.closePath();
+
+	// 圆内坐标点
+	var circlePoints = {}; // 这里最好不要用数组，不然mousemove时会暴走的，可以想象一下，每一次移动都要遍历那么大的数组，性能根不上
+	for (var i = 0; i < canvas.width; i++) {
+		for (var j = 0; j < canvas.height; j++) {
+			if (ctx.isPointInPath(i, j)) {
+				circlePoints['x' + i] = i;
+				circlePoints['y' + j] = j;
+			}
+		}
+	}
+
+	// 圆浮动事件
+	canvas.addEventListener('mousemove', function (e) {
+		if (circlePoints['x' + e.clientX] && circlePoints['y' + e.clientY]) {
+			// 删除圆
+			ctx.clearRect(50, 50, 100, 100);
+			ctx.fillStyle = 'gray';
+			ctx.fillRect(50, 50, 100, 100);
+			// 绘制圆
+			ctx.beginPath();
+			ctx.arc(100, 100, 50, 0, 2 * Math.PI);
+			ctx.fillStyle = 'green';
+			ctx.fill();
+		} else {
+			// 删除圆
+			ctx.clearRect(50, 50, 100, 100);
+			ctx.fillStyle = 'gray';
+			ctx.fillRect(50, 50, 100, 100);
+			// 绘制圆
+			ctx.beginPath();
+			ctx.arc(100, 100, 50, 0, 2 * Math.PI);
+			ctx.fillStyle = 'red';
+			ctx.fill();
+			ctx.closePath();
+		}
+	});
+
+	// 圆点击事件
+	canvas.addEventListener('click', function (e) {
+		if (circlePoints['x' + e.clientX] && circlePoints['y' + e.clientY]) {
+			var txt = 'Hello World !';
+			var gradient = ctx.createLinearGradient(200, 100, ctx.measureText(txt).width + 200, 124);
+			gradient.addColorStop("0", "orange");
+			gradient.addColorStop("0.5", "blue");
+			gradient.addColorStop("1.0", "red");
+			ctx.font = "24px Arial";
+			ctx.fillStyle = gradient;
+			ctx.fillText(txt, 200, 100);
+		}
+	});
+
+	// ========[ 测试二 ]========= //
+
+	// 绘制矩形
+	ctx.beginPath();
+	ctx.fillStyle = 'orange';
+	ctx.rect(50, 200, 200, 100);
+	ctx.fill();
+	ctx.closePath();
+
+	// 保存矩形内坐标
+	var rectPoints = {};
+	for (var i = 0; i < canvas.width; i++) {
+		for (var j = 0; j < canvas.height; j++) {
+			if (ctx.isPointInPath(i, j)) {
+				rectPoints['x' + i] = i;
+				rectPoints['y' + j] = j;
+			}
+		}
+	}
+
+	// 矩形点击
+	canvas.addEventListener('click', function (e) {
+		if (rectPoints['x' + e.clientX] && rectPoints['y' + e.clientY]) {
+			var translateX = 50;
+			(function translateAnimate() {
+				ctx.clearRect(translateX, 200, 200, 100);
+				ctx.fillStyle = 'gray';
+				ctx.fillRect(translateX, 200, 200, 100);
+				translateX++;
+
+				ctx.beginPath();
+				ctx.fillStyle = 'orange';
+				ctx.rect(translateX, 200, 200, 100);
+				ctx.fill();
+				ctx.closePath();
+				if (translateX < 190) requestAnimationFrame(translateAnimate);
+			})();
+		}
+	});
+
+</script>
